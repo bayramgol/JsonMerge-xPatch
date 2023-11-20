@@ -9,11 +9,10 @@ import com.portal.PortalProject.entity.UserEntity;
 import java.util.List;
 public interface UserService {
     List<UserEntity> getAllUsers();
-    UserEntity getUserById(Long id);
+    UserEntity getUserById(String id);
     UserEntity createUser(UserEntity user);
-    UserEntity updateUser(Long id, UserEntity updatedUser);
-    void deleteUser(Long id);
+    UserEntity updateUser(String id, UserEntity updatedUser);
+    void deleteUser(String id);
     String applyJsonPatch(JsonPatchDto jsonPatchDto) throws JsonPatchException;
     JsonNode mergePatch(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto);
-    JsonNode updateUserJson(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto);
 }
