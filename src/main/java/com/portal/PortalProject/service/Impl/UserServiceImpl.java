@@ -14,15 +14,16 @@ import com.portal.PortalProject.repository.UserRepository;
 import com.portal.PortalProject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private CouchbaseTemplate template;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     @Override
@@ -32,29 +33,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity getUserById(String id) {
-        return userRepository.findById(id)
+        return userRepository.findById(Long.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
     @Override
     public UserEntity createUser(UserEntity user) {
         return userRepository.save(user);
     }
-
-
-    @Override
-    public UserEntity updateUser(String id, UserEntity updatedUser) {
-        UserEntity existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-        existingUser.setName(updatedUser.getName());
-        existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setJobTitle(updatedUser.getJobTitle());
-
-        return userRepository.save(existingUser);
-    }
     @Override
     public void deleteUser(String id) {
-        userRepository.deleteById(id);
+        userRepository.deleteById(Long.valueOf(id));
     }
 
     public String applyJsonPatch(JsonPatchDto jsonPatchDto) throws JsonPatchException {
@@ -68,6 +56,11 @@ public class UserServiceImpl implements UserService {
 
             throw new JsonPatchException("Error applying JSON Patch", e);
         }
+    }
+    public JsonNode updateUserJson(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto){
+        JsonNode mergedNode= mergePatch(userEntity,jsonMergePatchDto);
+        userRepository.save(mergedNode);
+        return mergedNode;
     }
     @Override
     public JsonNode mergePatch(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto) {
@@ -91,6 +84,10 @@ public class UserServiceImpl implements UserService {
         return mergedNode;
     }
 
+    public JsonNode createJsonUser(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto) {
+        JsonNode jsonNode = mergePatch(userEntity,jsonMergePatchDto);
+        return userRepository.save(jsonNode);
+    }
 }
 
 

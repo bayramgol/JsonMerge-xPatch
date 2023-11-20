@@ -43,12 +43,13 @@ public class UserController {
         UserEntity createdUser = userService.createUser(user);
         return ResponseEntity.ok(createdUser);
     }
-
+/*
     @PatchMapping("/{id}")
     public ResponseEntity<UserEntity> updateUser(@PathVariable String id, @RequestBody UserEntity updatedUser) {
         UserEntity user = userService.updateUser(id,updatedUser);
         return ResponseEntity.ok(user);
     }
+ */
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
@@ -73,9 +74,9 @@ public class UserController {
             throw new IllegalArgumentException("JsonMergePatchDto must not be null");
         }
 
-        UserEntity userEntity = userRepository.findById(id)
+        UserEntity userEntity = userRepository.findById(Long.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
+        userService.updateUserJson(userEntity,jsonMergePatchDto);
         JsonNode mergedNode = userService.mergePatch(userEntity, jsonMergePatchDto);
         return ResponseEntity.ok(mergedNode);
     }

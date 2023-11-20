@@ -11,8 +11,8 @@ public interface UserService {
     List<UserEntity> getAllUsers();
     UserEntity getUserById(String id);
     UserEntity createUser(UserEntity user);
-    UserEntity updateUser(String id, UserEntity updatedUser);
     void deleteUser(String id);
     String applyJsonPatch(JsonPatchDto jsonPatchDto) throws JsonPatchException;
     JsonNode mergePatch(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto);
+    JsonNode updateUserJson(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto);
 }
