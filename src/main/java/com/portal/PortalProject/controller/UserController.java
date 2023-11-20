@@ -30,11 +30,10 @@ public class UserController {
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         List<UserEntity> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
-
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserEntity> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserEntity> getUserById(@PathVariable String id) {
         UserEntity user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
@@ -46,13 +45,13 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<UserEntity> updateUser(@PathVariable Long id, @RequestBody UserEntity updatedUser) {
+    public ResponseEntity<UserEntity> updateUser(@PathVariable String id, @RequestBody UserEntity updatedUser) {
         UserEntity user = userService.updateUser(id,updatedUser);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
@@ -69,7 +68,7 @@ public class UserController {
     }
 
     @PatchMapping("/merge/{id}")
-    public ResponseEntity<JsonNode> applyJsonMergePatch(@PathVariable Long id, @RequestBody JsonMergePatchDto jsonMergePatchDto) {
+    public ResponseEntity<JsonNode> applyJsonMergePatch(@PathVariable String id, @RequestBody JsonMergePatchDto jsonMergePatchDto) {
         if (jsonMergePatchDto == null) {
             throw new IllegalArgumentException("JsonMergePatchDto must not be null");
         }
@@ -78,7 +77,6 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         JsonNode mergedNode = userService.mergePatch(userEntity, jsonMergePatchDto);
-        userService.updateUserJson(userEntity,jsonMergePatchDto);
         return ResponseEntity.ok(mergedNode);
     }
 }

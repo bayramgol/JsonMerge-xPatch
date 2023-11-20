@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity getUserById(Long id) {
+    public UserEntity getUserById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserEntity updateUser(Long id, UserEntity updatedUser) {
+    public UserEntity updateUser(String id, UserEntity updatedUser) {
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(existingUser);
     }
     @Override
-    public void deleteUser(Long id) {
+    public void deleteUser(String id) {
         userRepository.deleteById(id);
     }
 
@@ -68,11 +68,6 @@ public class UserServiceImpl implements UserService {
 
             throw new JsonPatchException("Error applying JSON Patch", e);
         }
-    }
-    public JsonNode updateUserJson(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto){
-        JsonNode mergedNode= mergePatch(userEntity,jsonMergePatchDto);
-        userRepository.save(mergedNode);
-        return mergedNode;
     }
     @Override
     public JsonNode mergePatch(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto) {
@@ -96,10 +91,6 @@ public class UserServiceImpl implements UserService {
         return mergedNode;
     }
 
-    public JsonNode createJsonUser(UserEntity userEntity, JsonMergePatchDto jsonMergePatchDto) {
-        JsonNode jsonNode = mergePatch(userEntity,jsonMergePatchDto);
-        return userRepository.save(jsonNode);
-    }
 }
 
 
