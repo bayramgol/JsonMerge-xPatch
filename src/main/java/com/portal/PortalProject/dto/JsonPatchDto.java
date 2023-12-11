@@ -6,5 +6,4 @@ import lombok.Data;
 @Data
 public class JsonPatchDto {
     private JsonPatch patch;
-    private String targetJson;
 }

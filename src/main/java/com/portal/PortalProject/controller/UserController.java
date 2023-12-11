@@ -5,12 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.portal.PortalProject.dto.JsonMergePatchDto;
 import com.portal.PortalProject.dto.JsonPatchDto;
-import com.portal.PortalProject.dto.UserDto;
 import com.portal.PortalProject.entity.UserEntity;
 import com.portal.PortalProject.repository.UserRepository;
 import com.portal.PortalProject.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +23,6 @@ public class UserController {
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
 
-
     @GetMapping
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         List<UserEntity> users = userService.getAllUsers();
@@ -35,31 +32,29 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserEntity> getUserById(@PathVariable String id) {
         UserEntity user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+        if(user.toJsonNode().isEmpty()){
+            return new ResponseEntity(user,HttpStatus.NOT_FOUND);
+        } else
+            return ResponseEntity.ok(user);
     }
 
     @PostMapping
     public ResponseEntity<UserEntity> createUser(@RequestBody UserEntity user) {
         UserEntity createdUser = userService.createUser(user);
-        return ResponseEntity.ok(createdUser);
+        return new ResponseEntity(createdUser,HttpStatus.CREATED);
     }
-/*
-    @PatchMapping("/{id}")
-    public ResponseEntity<UserEntity> updateUser(@PathVariable String id, @RequestBody UserEntity updatedUser) {
-        UserEntity user = userService.updateUser(id,updatedUser);
-        return ResponseEntity.ok(user);
-    }
- */
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteUser(UserEntity user, @PathVariable String id) {
+        userService.deleteUser(user, id);
+        return ResponseEntity.ok("Deleted");
     }
-    @PatchMapping
-    public ResponseEntity<String> applyJsonPatch(@RequestBody JsonPatchDto jsonPatchDto) throws JsonPatchException{
+    @PatchMapping("/{id}")
+    public ResponseEntity<String> applyJsonPatch(@PathVariable String id, @RequestBody JsonPatchDto jsonPatchDto) throws JsonPatchException {
         try {
-            String patchedJson = userService.applyJsonPatch(jsonPatchDto);
+            UserEntity userEntity = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            String patchedJson = userService.applyJsonPatch(userEntity,jsonPatchDto);
             return ResponseEntity.ok(patchedJson);
         } catch (JsonPatchException | IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid patch or target JSON.");
@@ -74,10 +69,10 @@ public class UserController {
             throw new IllegalArgumentException("JsonMergePatchDto must not be null");
         }
 
-        UserEntity userEntity = userRepository.findById(Long.valueOf(id))
+        UserEntity userEntity = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        userService.updateUserJson(userEntity,jsonMergePatchDto);
-        JsonNode mergedNode = userService.mergePatch(userEntity, jsonMergePatchDto);
+
+        JsonNode mergedNode = userService.mergePatch(userEntity, jsonMergePatchDto,id);
         return ResponseEntity.ok(mergedNode);
     }
 }
